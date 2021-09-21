@@ -1,0 +1,58 @@
+.App {
+    font-size: x-large;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.board {
+    height: calc(80vh + 16px);
+    width: calc(40vh + 8px);
+    background-color: whitesmoke;
+    border: 3px solid black;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+.block {
+    height: 10vh;
+    width: 10vh;
+    border: 1px solid rgb(212, 206, 206);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4.5vh;
+}
+
+.active {
+    font-weight: bold;
+}
+
+.v1 {
+    background-color: khaki;
+}
+
+.v2 {
+    background-color: rgb(192, 178, 49);
+}
+
+.v4 {
+    background-color: yellowgreen;
+}
+
+.v8 {
+    background-color: turquoise;
+}
+
+.v16 {
+    background-color: teal;
+}
+
+.v32 {
+    background-color: violet;
+}
+
