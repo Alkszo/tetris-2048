@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import Block from './Block';
 
 const Board = () => {
-    //const rows = [1, 2, 3, 4, 5, 6, 7, 8]
     const [blocks, setBlocks] = useState([{id: 'a1', active: false, value: null}, {id: 'a2', active: false, value: null}, {id: 'a3', active: false, value: null}, {id: 'a4', active: false, value: null},
     {id: 'a5', active: false, value: null}, {id: 'a6', active: false, value: null}, {id: 'a7', active: false, value: null}, {id: 'a8', active: false, value: null},
     {id: 'b1', active: false, value: null}, {id: 'b2', active: false, value: null}, {id: 'b3', active: false, value: null}, {id: 'b4', active: false, value: null}, 
@@ -12,40 +11,139 @@ const Board = () => {
     {id: 'd1', active: false, value: null}, {id: 'd2', active: false, value: null}, {id: 'd3', active: false, value: null}, {id: 'd4', active: false, value: null},
     {id: 'd5', active: false, value: null}, {id: 'd6', active: false, value: null}, {id: 'd7', active: false, value: null}, {id: 'd8', active: false, value: null},])
 
-    const tick = () => {
-        const startingPositions = [0, 8, 16, 24]
-        console.log('robiem cos');
-        let ublocks = JSON.parse(JSON.stringify(blocks));
-        for (let i = ublocks.length - 1; i>=0; i--) {
-            if(ublocks[i].active) {
-                if(ublocks[i].id[1] !== '8' && !ublocks[i+1].value) {
-                    ublocks[i].active = false;
-                    ublocks[i+1].value = ublocks[i].value;
-                    ublocks[i].value = null;
-                    ublocks[i+1].active = true;
+
+    const adjustColumn = (emptyfield) => {
+        const spacesAbove = emptyfield % 8;
+        const columnTop = emptyfield - spacesAbove;
+        let newColumn = JSON.parse(JSON.stringify([...blocks.slice(columnTop, emptyfield)]));
+        for (const prop of newColumn) {
+            let letter = prop.id[0]
+            let num = Number(prop.id[1])
+            num++
+            prop.id = `${letter}${num}`
+            console.log(prop.id)
+        }
+       // console.log(spacesAbove, columnTop)
+        console.log(newColumn)
+        setBlocks(oldBlocks => [...oldBlocks.slice(0, columnTop), {...oldBlocks[columnTop], active:false, value:null}, ...newColumn,
+    ...oldBlocks.slice(emptyfield + 1, 32)])
+
+    }
+
+    const checkAdjacent = (ind) => {
+        const val = blocks[ind].value;
+        const left = blocks[ind - 8];
+        const down = blocks[ind + 1];
+        const right = blocks[ind + 8];
+        const leftVal = left ? left.value : null;
+        const downVal = down ? down.value : null;
+        const rightVal = right ? right.value : null;
+        if(downVal === val) {
+            setBlocks(oldBlocks => [...oldBlocks.slice(0, ind), {...oldBlocks[ind], active: true, value: downVal * 2}, 
+            {...down, value: null}, ...oldBlocks.slice(ind + 2, 32)])
+        }
+        if(leftVal === val) {
+            setBlocks(oldBlocks => [...oldBlocks.slice(0, ind - 8), {...left, value: null}, ...oldBlocks.slice(ind - 7, ind),
+                {...oldBlocks[ind], value: leftVal * 2}, ...oldBlocks.slice(ind + 1, 32)])
+            adjustColumn(ind - 8)
+        }
+        if(rightVal === val) {
+            setBlocks(oldBlocks => [...oldBlocks.slice(0, ind), {...oldBlocks[ind], value: rightVal * 2}, 
+            ...oldBlocks.slice(ind + 1, ind + 8), {...right, value: null}, ...oldBlocks.slice(ind + 9, 32)])
+            adjustColumn(ind + 8)
+        }
+    }
+
+    useEffect(() => {
+        const handleKeystroke = (e) => {
+            const key = e.key;
+            const activeBlock = blocks.find(bl => bl.active);
+            const activeBlockID = blocks.indexOf(activeBlock);
+            const moveLeft = () => {
+                if(activeBlock.id[0] === 'a' || blocks[activeBlockID - 8].value) {
+                    return
                 } else {
-                    ublocks[i].active = false;
-                }
+                    setBlocks(oldBlocks => [...oldBlocks.slice(0, activeBlockID - 8), {...oldBlocks[activeBlockID - 8], value: activeBlock.value, active: true},
+                ...oldBlocks.slice(activeBlockID - 7, activeBlockID), {...activeBlock, value: null, active: false}, ...oldBlocks.slice(activeBlockID + 1, 32)])
+                }          
+            }
+            const moveRight = () => {
+                if(activeBlock.id[0] === 'd' || blocks[activeBlockID + 8].value) {
+                    return
+                } else {
+                    setBlocks(oldBlocks => [...oldBlocks.slice(0, activeBlockID), {...activeBlock, value: null, active: false}, ...oldBlocks.slice(activeBlockID + 1, activeBlockID + 8),
+                    {...oldBlocks[activeBlockID + 8], value: activeBlock.value, active: true}, ...oldBlocks.slice(activeBlockID + 9, 32)])
+                }        
+            }
+            const moveDown = () => {
+                if(activeBlock.id[1] === '8' || blocks[activeBlockID + 1].value) {
+                    setBlocks(oldBlocks => [...oldBlocks.slice(0, activeBlockID), {...activeBlock, active: false}, ...oldBlocks.slice(activeBlockID + 1, 32)])
+                    checkAdjacent(activeBlockID)
+                } else {
+                    setBlocks(oldBlocks => [...oldBlocks.slice(0, activeBlockID), {...activeBlock, value: null, active: false}, {...oldBlocks[activeBlockID + 1], value: activeBlock.value, active: true}, ...oldBlocks.slice(activeBlockID + 2, 32)])
+                }    
+            }
+            if (!activeBlock) {
+                return
+            } else if(key === 'a' || key === 'ArrowLeft') {
+                moveLeft()
+            } else if(key === 'd' || key === 'ArrowRight') {
+                moveRight()
+            } else if(key === 's' || key === 'ArrowDown') {
+                moveDown()
+            } else {
+                console.log('stupid key')
             }
         }
-        if(ublocks[0].value || ublocks[8].value || ublocks[16].value || ublocks[24].value) {
-            console.log('KONIEC')
-        }
-        if (!ublocks.some(bl => bl.active)) {
-            const randomStart = startingPositions[Math.floor(Math.random() * 4)]
-            ublocks[randomStart].active = true;
-            ublocks[randomStart].value = Math.pow(2, Math.floor(Math.random() * 6));
-        }
+        window.addEventListener('keydown', handleKeystroke)
 
-        setBlocks(ublocks)
+        return () => {
+            window.removeEventListener('keydown', handleKeystroke)
+        }
+    }, [blocks])
+
+
+    const tick = () => {
+        const startingPositions = [0, 8, 16, 24];
+        const activeBlock = blocks.find(bl => bl.active);
+        const activeBlockID = blocks.indexOf(activeBlock);
+        if(activeBlock){
+            if(activeBlock.id[1] !== '8' && !blocks[activeBlockID + 1].value) {
+                setBlocks(oldBlocks => [...oldBlocks.slice(0, activeBlockID), {...activeBlock, value: null, active: false}, {...oldBlocks[activeBlockID + 1], value: activeBlock.value, active: true}, ...oldBlocks.slice(activeBlockID + 2, 32)])
+            } else {
+                setBlocks(oldBlocks => [...oldBlocks.slice(0, activeBlockID), {...activeBlock, active: false}, ...oldBlocks.slice(activeBlockID + 1, 32)])
+                checkAdjacent(activeBlockID)
+                if(blocks[0].value || blocks[8].value || blocks[16].value || blocks[24].value) {
+                    console.log('KONIEC')
+                }
+            }
+        } else {
+            const randomStart = startingPositions[Math.floor(Math.random() * 4)];
+            const randomValue = Math.pow(2, Math.floor(Math.random() * 3));
+            setBlocks(oldBlocks => [...oldBlocks.slice(0, randomStart), {...oldBlocks[randomStart], value: randomValue, active: true}, ...oldBlocks.slice([randomStart + 1], 32)])
+        }
     }
 
     
+    
+    useEffect(() => {
+        const int = setInterval(tick, 1000)
+        
+        return () => clearInterval(int)
+    }, [blocks])
 
-    return(        
-    <div className="board">
-        {blocks.map(block => <Block identifier={block.id} activity={block.active} value={block.value} key={block.id}/>)}
-    </div>
+    const clickTest = () => {
+        console.log('CLICK!')
+    }
+    return(
+    <>
+        <div>
+            <button>Start!</button>
+        </div>        
+        <div className="board" onClick={clickTest}>
+            {blocks.map(block => <Block identifier={block.id} activity={block.active} value={block.value} key={block.id}/>)}
+        </div>
+    </>
     )
 }
 
@@ -85,4 +183,57 @@ export default Board;
     useEffect(() => {
         setTimeout(tick, 1000) 
     }, [blocks])
+*/
+
+/*
+useEffect(() => {
+        const handleKeystroke = (e) => {
+            const key = e.key;
+            const activeBlock = blocks.find(bl => bl.active);
+            const activeBlockID = blocks.indexOf(activeBlock);
+            const moveLeft = () => {
+                if(activeBlock.id[0] === 'a' || blocks[activeBlockID - 8].value) {
+                    return
+                } else {
+                    setBlocks(oldBlocks => [...oldBlocks.slice(0, activeBlockID - 8), {...oldBlocks[activeBlockID - 8], value: activeBlock.value, active: true},
+                ...oldBlocks.slice(activeBlockID - 7, activeBlockID), {...activeBlock, value: null, active: false}, ...oldBlocks.slice(activeBlockID + 1, 32)])
+                }          
+            }
+            const moveRight = () => {
+                if(activeBlock.id[0] === 'd' || blocks[activeBlockID + 8].value) {
+                    return
+                } else {
+                    setBlocks(oldBlocks => [...oldBlocks.slice(0, activeBlockID), {...activeBlock, value: null, active: false}, ...oldBlocks.slice(activeBlockID + 1, activeBlockID + 8),
+                    {...oldBlocks[activeBlockID + 8], value: activeBlock.value, active: true}, ...oldBlocks.slice(activeBlockID + 9, 32)])
+                }        
+            }
+            const moveDown = () => {
+                if(activeBlock.id[1] === '8' || blocks[activeBlockID + 1].value) {
+                    setBlocks(oldBlocks => [...oldBlocks.slice(0, activeBlockID), {...activeBlock, active: false}, ...oldBlocks.slice(activeBlockID + 1, 32)])
+                    checkAdjacent(activeBlockID)
+                } else {
+                    setBlocks(oldBlocks => [...oldBlocks.slice(0, activeBlockID), {...activeBlock, value: null, active: false}, {...oldBlocks[activeBlockID + 1], value: activeBlock.value, active: true}, ...oldBlocks.slice(activeBlockID + 2, 32)])
+                }    
+            }
+            if (!activeBlock) {
+                return
+            } else if(key === 'a' || key === 'ArrowLeft') {
+                moveLeft()
+            } else if(key === 'd' || key === 'ArrowRight') {
+                moveRight()
+            } else if(key === 's' || key === 'ArrowDown') {
+                moveDown()
+            } else {
+                console.log('stupid key')
+            }
+        }
+        window.addEventListener('keydown', handleKeystroke)
+
+        return () => {
+            window.removeEventListener('keydown', handleKeystroke)
+        }
+    }, [blocks])
+
+
+
 */

@@ -56,3 +56,29 @@
     background-color: violet;
 }
 
+.v64 {
+    background-color: rgb(163, 46, 163);
+}
+
+.v128 {
+    background-color: rgb(54, 2, 54);
+}
+
+.v256 {
+    background-color: rgb(182, 45, 57);
+}
+
+.v512 {
+    background-color: rgb(247, 19, 38);
+}
+
+.v1024 {
+    background-color: rgb(218, 142, 42);
+}
+
+
+.v2048 {
+    background-color: rgb(250, 171, 1);
+}
+
+
